@@ -3,412 +3,385 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ thống Quản lý Bảo dưỡng Phương tiện Cá nhân</title>
-    <!-- Tailwind CSS CDN -->
+    <title>Personal Vehicle Maintenance System</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
+    <!-- FontAwesome Icon -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-gray-100 font-sans text-gray-800">
+<body class="bg-slate-100 font-sans min-h-screen text-slate-800 flex flex-col justify-between">
 
-    <!-- NAVIGATION BAR -->
-    <nav class="bg-blue-600 text-white shadow-lg sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 flex justify-between items-center h-16">
-            <div class="flex items-center space-x-3">
-                <i class="fa-solid fa-motorcycle text-2xl"></i>
-                <span class="font-bold text-lg md:text-xl">Vehicle Care System</span>
+    <!-- HEADER / NAVBAR -->
+    <nav class="bg-blue-600 text-white shadow-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 h-16 flex justify-between items-center">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="navigate('dashboard')">
+                <i class="fa-solid fa-screwdriver-wrench text-2xl text-blue-200"></i>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight">VehicleCare</h1>
+                    <p class="text-xs text-blue-200">Hệ thống Quản lý Bảo dưỡng Phương tiện Cá nhân</p>
+                </div>
             </div>
-            <div id="nav-actions" class="flex items-center space-x-4">
-                <!-- Sẽ render động qua Javascript -->
-            </div>
+            <div id="nav-user-actions" class="flex items-center space-x-3 text-sm"></div>
         </div>
     </nav>
 
-    <!-- MAIN CONTAINER -->
-    <main class="max-w-7xl mx-auto px-4 py-6" id="app">
-        <!-- Nội dung sẽ tự render dựa theo trạng thái đăng nhập -->
-    </main>
+    <!-- CONTENT WRAPPER -->
+    <main class="max-w-7xl mx-auto px-4 py-8 flex-1 w-full" id="main-content"></main>
 
-    <!-- JAVASCRIPT: BACKEND MOCK & FRONTEND CONTROLLER -->
+    <!-- FOOTER -->
+    <footer class="bg-white border-t py-4 text-center text-xs text-slate-500">
+        Personal Vehicle Maintenance Information System &copy; 2025 - Bài tập lớn nhóm
+    </footer>
+
+    <!-- MODAL POPUP CHUNG -->
+    <div id="modal-backdrop" class="fixed inset-0 bg-slate-900 bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all" id="modal-box">
+            <!-- Modal Body động -->
+        </div>
+    </div>
+
+    <!-- SCRIPT CHÍNH (FRONTEND + MOCK DATA ENGINE) -->
     <script>
-        // ==========================================
-        // 1. BACKEND & DATABASE LAYER (MÔ PHỎNG DATABASE TRÊN LOCALSTORAGE)
-        // ==========================================
+        // --- 1. SEED DATA ENGINE (LƯU LOCALSTORAGE TRÌNH DUYỆT) ---
         const DB = {
             init() {
-                if (!localStorage.getItem('vms_users')) {
-                    const defaultUsers = [
-                        { id: 1, name: "Nguyễn Văn A", email: "user@gmail.com", pass: "123456", role: "owner" },
-                        { id: 2, name: "Quản trị viên", email: "admin@gmail.com", pass: "123456", role: "admin" }
-                    ];
-                    localStorage.setItem('vms_users', JSON.stringify(defaultUsers));
+                if (!localStorage.getItem('pv_users')) {
+                    localStorage.setItem('pv_users', JSON.stringify([
+                        { id: 1, name: "Nguyễn Văn A", email: "user@demo.com", pass: "123456", role: "owner" },
+                        { id: 2, name: "Quản trị viên", email: "admin@demo.com", pass: "123456", role: "admin" }
+                    ]));
                 }
-                if (!localStorage.getItem('vms_vehicles')) {
-                    const defaultVehicles = [
-                        { id: 101, userId: 1, name: "Honda SH 150i", plate: "29A1-123.45", odo: 12500, type: "Xe tay ga" },
-                        { id: 102, userId: 1, name: "Mazda 3", plate: "30H-999.88", odo: 45000, type: "Ô tô" }
-                    ];
-                    localStorage.setItem('vms_vehicles', JSON.stringify(defaultVehicles));
+                if (!localStorage.getItem('pv_vehicles')) {
+                    localStorage.setItem('pv_vehicles', JSON.stringify([
+                        { id: 101, userId: 1, name: "Honda Air Blade 125", plate: "29-G1 888.99", odo: 12500, type: "Xe máy" },
+                        { id: 102, userId: 1, name: "Mazda CX-5", plate: "30H-668.68", odo: 48000, type: "Ô tô" }
+                    ]));
                 }
-                if (!localStorage.getItem('vms_schedules')) {
-                    const defaultSchedules = [
-                        { id: 201, vehicleId: 101, serviceName: "Thay dầu nhớt động cơ", date: "2025-04-10", cost: 250000, status: "pending" },
-                        { id: 202, vehicleId: 102, serviceName: "Bảo dưỡng mốc 50,000 km", date: "2025-05-15", cost: 3500000, status: "pending" }
-                    ];
-                    localStorage.setItem('vms_schedules', JSON.stringify(defaultSchedules));
+                if (!localStorage.getItem('pv_schedules')) {
+                    localStorage.setItem('pv_schedules', JSON.stringify([
+                        { id: 201, vehicleId: 101, title: "Thay dầu nhớt Motul", date: "2025-04-15", cost: 180000, status: "pending" },
+                        { id: 202, vehicleId: 102, title: "Bảo dưỡng định kỳ cấp lớn", date: "2025-05-10", cost: 3500000, status: "pending" }
+                    ]));
                 }
-                if (!localStorage.getItem('vms_history')) {
-                    const defaultHistory = [
-                        { id: 301, vehicleId: 101, serviceName: "Thay săm lốp sau", date: "2025-01-15", cost: 450000, notes: "Thay lốp Michelin" },
-                        { id: 302, vehicleId: 102, serviceName: "Vệ sinh kim phun & bugi", date: "2025-02-01", cost: 1200000, notes: "Làm tại hãng" }
-                    ];
-                    localStorage.setItem('vms_history', JSON.stringify(defaultHistory));
+                if (!localStorage.getItem('pv_history')) {
+                    localStorage.setItem('pv_history', JSON.stringify([
+                        { id: 301, vehicleId: 101, title: "Thay săm lốp Michelin", date: "2025-01-10", cost: 650000, note: "Thay tại HEAD Honda" },
+                        { id: 302, vehicleId: 102, title: "Vệ sinh bướm ga & bu-gi", date: "2025-02-14", cost: 850000, note: "Bảo dưỡng gara quen" }
+                    ]));
                 }
-                if (!localStorage.getItem('vms_services')) {
-                    const defaultServices = [
-                        { id: 1, name: "Thay nhớt máy", basePrice: 200000 },
-                        { id: 2, name: "Kiểm tra hệ thống phanh", basePrice: 150000 },
-                        { id: 3, name: "Thay bugi", basePrice: 120000 }
-                    ];
-                    localStorage.setItem('vms_services', JSON.stringify(defaultServices));
+                if (!localStorage.getItem('pv_categories')) {
+                    localStorage.setItem('pv_categories', JSON.stringify([
+                        { id: 1, name: "Dầu nhớt & Phụ gia" },
+                        { id: 2, name: "Hệ thống Phanh / Lốp" },
+                        { id: 3, name: "Hệ thống Điện & Chiếu sáng" }
+                    ]));
                 }
             },
-            get(key) { return JSON.parse(localStorage.getItem('vms_' + key) || '[]'); },
-            set(key, data) { localStorage.setItem('vms_' + key, JSON.stringify(data)); }
+            get: (key) => JSON.parse(localStorage.getItem('pv_' + key) || '[]'),
+            set: (key, val) => localStorage.setItem('pv_' + key, JSON.stringify(val))
         };
 
-        // ==========================================
-        // 2. STATE MANAGEMENT & API CALLS
-        // ==========================================
-        let currentUser = JSON.parse(sessionStorage.getItem('vms_currentUser')) || null;
-        let currentTab = 'vehicles'; // 'vehicles' | 'schedules' | 'history' | 'reports' | 'admin'
-
+        // --- 2. AUTH STATE ---
         DB.init();
+        let currentUser = JSON.parse(sessionStorage.getItem('pv_auth')) || null;
+        let activeTab = 'vehicles'; // 'vehicles' | 'schedules' | 'history' | 'reports' | 'admin'
 
-        // ==========================================
-        // 3. RENDER CONTROLLER (FRONTEND UI)
-        // ==========================================
-        function renderNavbar() {
-            const nav = document.getElementById('nav-actions');
+        // --- 3. CONTROLLER & RENDER ---
+        function renderHeader() {
+            const nav = document.getElementById('nav-user-actions');
             if (currentUser) {
                 nav.innerHTML = `
-                    <span class="text-sm">Xin chào, <b>${currentUser.name}</b> (${currentUser.role === 'admin' ? 'Admin' : 'Chủ xe'})</span>
-                    <button onclick="handleLogout()" class="bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded-lg text-sm transition">
-                        <i class="fa-solid fa-arrow-right-from-bracket mr-1"></i> Đăng xuất
+                    <div class="flex items-center space-x-2">
+                        <span class="inline-block w-8 h-8 rounded-full bg-blue-800 text-center leading-8 font-bold text-white text-xs">
+                            ${currentUser.name[0]}
+                        </span>
+                        <div class="hidden sm:block text-left">
+                            <div class="font-bold text-xs">${currentUser.name}</div>
+                            <div class="text-[10px] text-blue-200 capitalize">${currentUser.role === 'admin' ? 'Quản trị viên' : 'Chủ xe'}</div>
+                        </div>
+                    </div>
+                    <button onclick="logout()" class="bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded-lg text-xs font-semibold shadow">
+                        <i class="fa-solid fa-power-off mr-1"></i> Thoát
                     </button>
                 `;
             } else {
                 nav.innerHTML = `
-                    <button onclick="renderLoginModal(true)" class="hover:underline">Đăng nhập</button>
-                    <button onclick="renderLoginModal(false)" class="bg-white text-blue-600 px-3 py-1.5 rounded-lg text-sm font-semibold hover:bg-gray-100 transition">Đăng ký</button>
+                    <button onclick="openLoginModal()" class="text-white hover:underline text-sm font-medium">Đăng nhập</button>
+                    <button onclick="openRegisterModal()" class="bg-white text-blue-600 hover:bg-blue-50 px-3 py-1.5 rounded-lg text-xs font-bold shadow">Đăng ký</button>
                 `;
             }
         }
 
         function renderApp() {
-            renderNavbar();
-            const app = document.getElementById('app');
+            renderHeader();
+            const main = document.getElementById('main-content');
 
             if (!currentUser) {
-                app.innerHTML = `
-                    <div class="max-w-md mx-auto mt-12 bg-white p-8 rounded-xl shadow-md text-center">
-                        <i class="fa-solid fa-car-tunnel text-blue-600 text-5xl mb-4"></i>
-                        <h2 class="text-2xl font-bold mb-2">Hệ Thống Quản Lý Bảo Dưỡng</h2>
-                        <p class="text-gray-600 mb-6 text-sm">Ghi chép chi phí, nhắc lịch bảo dưỡng xe máy & ô tô dễ dàng.</p>
+                main.innerHTML = `
+                    <div class="max-w-xl mx-auto my-12 bg-white p-8 rounded-2xl shadow-xl text-center border">
+                        <div class="w-20 h-20 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">
+                            <i class="fa-solid fa-car-side"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold text-slate-800 mb-2">Personal Vehicle Maintenance</h2>
+                        <p class="text-slate-500 text-sm mb-8">Hệ thống quản lý thông tin phương tiện, nhắc lịch bảo dưỡng định kỳ và kiểm soát chi phí sửa chữa thông minh.</p>
+                        
                         <div class="space-y-3">
-                            <button onclick="fillAndLogin('user@gmail.com', '123456')" class="w-full bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700">Đăng nhập Demo: Chủ xe</button>
-                            <button onclick="fillAndLogin('admin@gmail.com', '123456')" class="w-full bg-gray-800 text-white py-2 rounded-lg font-medium hover:bg-black">Đăng nhập Demo: Admin</button>
+                            <button onclick="quickLogin('user@demo.com')" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold shadow-md transition flex items-center justify-center space-x-2">
+                                <i class="fa-solid fa-user"></i>
+                                <span>Demo nhanh với quyền: CHỦ PHƯƠNG TIỆN</span>
+                            </button>
+                            <button onclick="quickLogin('admin@demo.com')" class="w-full bg-slate-800 hover:bg-slate-900 text-white py-3 rounded-xl font-semibold shadow-md transition flex items-center justify-center space-x-2">
+                                <i class="fa-solid fa-user-shield"></i>
+                                <span>Demo nhanh với quyền: QUẢN TRỊ VIÊN</span>
+                            </button>
                         </div>
                     </div>
                 `;
                 return;
             }
 
-            // USER DASHBOARD
-            app.innerHTML = `
-                <!-- TABS -->
-                <div class="flex border-b border-gray-300 mb-6 space-x-2">
+            // Giao diện sau khi đăng nhập
+            main.innerHTML = `
+                <!-- TABS ĐIỀU HƯỚNG THEO ROLE -->
+                <div class="flex border-b border-slate-300 mb-6 space-x-1 sm:space-x-4 overflow-x-auto">
                     ${currentUser.role === 'owner' ? `
-                        <button onclick="switchTab('vehicles')" class="px-4 py-2 border-b-2 font-medium ${currentTab === 'vehicles' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500'}">
-                            <i class="fa-solid fa-motorcycle mr-1"></i> UC02 - Phương tiện
+                        <button onclick="setTab('vehicles')" class="tab-btn px-4 py-3 font-semibold text-sm border-b-2 flex items-center space-x-2 ${activeTab === 'vehicles' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'}">
+                            <i class="fa-solid fa-motorcycle"></i> <span>UC02 - Phương tiện</span>
                         </button>
-                        <button onclick="switchTab('schedules')" class="px-4 py-2 border-b-2 font-medium ${currentTab === 'schedules' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500'}">
-                            <i class="fa-solid fa-calendar-check mr-1"></i> UC04 - Lịch bảo dưỡng
+                        <button onclick="setTab('schedules')" class="tab-btn px-4 py-3 font-semibold text-sm border-b-2 flex items-center space-x-2 ${activeTab === 'schedules' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'}">
+                            <i class="fa-solid fa-calendar-check"></i> <span>UC04 - Lịch bảo dưỡng</span>
                         </button>
-                        <button onclick="switchTab('history')" class="px-4 py-2 border-b-2 font-medium ${currentTab === 'history' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500'}">
-                            <i class="fa-solid fa-clock-rotate-left mr-1"></i> UC03 - Lịch sử
+                        <button onclick="setTab('history')" class="tab-btn px-4 py-3 font-semibold text-sm border-b-2 flex items-center space-x-2 ${activeTab === 'history' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'}">
+                            <i class="fa-solid fa-clock-rotate-left"></i> <span>UC03 - Lịch sử</span>
                         </button>
-                        <button onclick="switchTab('reports')" class="px-4 py-2 border-b-2 font-medium ${currentTab === 'reports' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500'}">
-                            <i class="fa-solid fa-chart-pie mr-1"></i> UC05 - Báo cáo & Xuất CSV
+                        <button onclick="setTab('reports')" class="tab-btn px-4 py-3 font-semibold text-sm border-b-2 flex items-center space-x-2 ${activeTab === 'reports' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'}">
+                            <i class="fa-solid fa-chart-line"></i> <span>UC05 - Báo cáo & Xuất CSV</span>
                         </button>
                     ` : `
-                        <button onclick="switchTab('admin')" class="px-4 py-2 border-b-2 font-medium border-blue-600 text-blue-600">
-                            <i class="fa-solid fa-users-gear mr-1"></i> Quản trị hệ thống (Admin)
+                        <button onclick="setTab('admin')" class="tab-btn px-4 py-3 font-semibold text-sm border-b-2 border-blue-600 text-blue-600 flex items-center space-x-2">
+                            <i class="fa-solid fa-gear"></i> <span>Quản trị viên hệ thống</span>
                         </button>
                     `}
                 </div>
 
-                <!-- TAB CONTENT -->
-                <div id="tab-content"></div>
+                <div id="tab-viewport"></div>
             `;
 
-            renderCurrentTabContent();
+            renderTabContent();
         }
 
-        function switchTab(tab) {
-            currentTab = tab;
+        function setTab(tab) {
+            activeTab = tab;
             renderApp();
         }
 
-        function renderCurrentTabContent() {
-            const container = document.getElementById('tab-content');
-            if (!container) return;
+        function renderTabContent() {
+            const vp = document.getElementById('tab-viewport');
+            if (!vp) return;
 
-            if (currentTab === 'vehicles') renderVehiclesTab(container);
-            else if (currentTab === 'schedules') renderSchedulesTab(container);
-            else if (currentTab === 'history') renderHistoryTab(container);
-            else if (currentTab === 'reports') renderReportsTab(container);
-            else if (currentTab === 'admin') renderAdminTab(container);
+            if (activeTab === 'vehicles') renderVehicles(vp);
+            if (activeTab === 'schedules') renderSchedules(vp);
+            if (activeTab === 'history') renderHistory(vp);
+            if (activeTab === 'reports') renderReports(vp);
+            if (activeTab === 'admin') renderAdmin(vp);
         }
 
         // ==========================================
-        // 4. USE CASE IMPLEMENTATIONS
-        // ==========================================
-
         // UC02 - QUẢN LÝ PHƯƠNG TIỆN
-        function renderVehiclesTab(el) {
+        // ==========================================
+        function renderVehicles(container) {
             const list = DB.get('vehicles').filter(v => v.userId === currentUser.id);
-            el.innerHTML = `
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-xl font-bold">Danh sách phương tiện của bạn</h2>
-                    <button onclick="addNewVehicle()" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700">
-                        <i class="fa-solid fa-plus mr-1"></i> Thêm xe mới
+            container.innerHTML = `
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h2 class="text-xl font-bold">Phương tiện của bạn</h2>
+                        <p class="text-xs text-slate-500">Quản lý các loại xe máy, ô tô cá nhân</p>
+                    </div>
+                    <button onclick="openAddVehicleModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center space-x-1 shadow">
+                        <i class="fa-solid fa-plus"></i> <span>Thêm xe</span>
                     </button>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     ${list.map(v => `
-                        <div class="bg-white p-5 rounded-lg shadow border border-gray-100 flex flex-col justify-between">
-                            <div>
-                                <div class="flex justify-between items-start">
-                                    <h3 class="font-bold text-lg text-blue-700">${v.name}</h3>
-                                    <span class="text-xs bg-blue-100 text-blue-700 font-semibold px-2 py-0.5 rounded">${v.type}</span>
-                                </div>
-                                <p class="text-gray-600 text-sm mt-2"><i class="fa-solid fa-id-card mr-2"></i>Biển số: <b>${v.plate}</b></p>
-                                <p class="text-gray-600 text-sm"><i class="fa-solid fa-gauge-high mr-2"></i>Odo: <b>${v.odo.toLocaleString()} km</b></p>
+                        <div class="bg-white rounded-xl shadow-sm border p-5 relative overflow-hidden flex flex-col justify-between">
+                            <div class="absolute top-0 right-0 bg-blue-100 text-blue-700 text-[10px] font-bold px-3 py-1 rounded-bl-lg uppercase">
+                                ${v.type}
                             </div>
-                            <div class="mt-4 pt-3 border-t flex justify-end space-x-2">
-                                <button onclick="deleteVehicle(${v.id})" class="text-red-500 hover:text-red-700 text-sm"><i class="fa-solid fa-trash mr-1"></i>Xoá</button>
+                            <div>
+                                <h3 class="font-bold text-lg text-slate-800">${v.name}</h3>
+                                <div class="text-sm text-slate-500 mt-2 space-y-1">
+                                    <div><i class="fa-solid fa-id-card w-5 text-slate-400"></i> Biển số: <b class="text-slate-700">${v.plate}</b></div>
+                                    <div><i class="fa-solid fa-gauge w-5 text-slate-400"></i> Odo: <b class="text-slate-700">${v.odo.toLocaleString()} km</b></div>
+                                </div>
+                            </div>
+                            <div class="mt-4 pt-4 border-t flex justify-end">
+                                <button onclick="deleteVehicle(${v.id})" class="text-red-500 hover:text-red-700 text-xs font-semibold">
+                                    <i class="fa-solid fa-trash mr-1"></i> Xoá xe
+                                </button>
                             </div>
                         </div>
                     `).join('')}
+                    ${list.length === 0 ? `<div class="col-span-3 text-center py-12 text-slate-400">Bạn chưa thêm xe nào. Hãy bấm "Thêm xe" nhé!</div>` : ''}
                 </div>
             `;
         }
 
-        function addNewVehicle() {
-            const name = prompt("Tên phương tiện (vd: Vision 2022):");
-            if (!name) return;
-            const plate = prompt("Biển số xe (vd: 59-X1 123.45):");
-            const odo = parseInt(prompt("Số km đã đi:", "10000")) || 0;
-            const type = prompt("Loại xe (Xe máy / Ô tô):", "Xe máy");
+        // ==========================================
+        // UC04 - QUẢN LÝ LỊCH BẢO DƯỠNG (HOÀN TẤT -> TẠO LỊCH SỬ)
+        // ==========================================
+        function renderSchedules(container) {
+            const vehicles = DB.get('vehicles').filter(v => v.userId === currentUser.id);
+            const vIds = vehicles.map(v => v.id);
+            const list = DB.get('schedules').filter(s => vIds.includes(s.vehicleId) && s.status === 'pending');
 
-            const list = DB.get('vehicles');
-            list.push({ id: Date.now(), userId: currentUser.id, name, plate, odo, type });
-            DB.set('vehicles', list);
-            renderCurrentTabContent();
-        }
-
-        function deleteVehicle(id) {
-            if (confirm("Bạn có chắc muốn xoá phương tiện này?")) {
-                let list = DB.get('vehicles').filter(v => v.id !== id);
-                DB.set('vehicles', list);
-                renderCurrentTabContent();
-            }
-        }
-
-        // UC04 - QUẢN LÝ LỊCH BẢO DƯỠNG (KÈM EXTEND HOÀN TẤT)
-        function renderSchedulesTab(el) {
-            const myVehicles = DB.get('vehicles').filter(v => v.userId === currentUser.id);
-            const vehicleIds = myVehicles.map(v => v.id);
-            const list = DB.get('schedules').filter(s => vehicleIds.includes(s.vehicleId) && s.status === 'pending');
-
-            el.innerHTML = `
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-xl font-bold">Lịch bảo dưỡng định kỳ sắp tới</h2>
-                    <button onclick="addNewSchedule()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">
-                        <i class="fa-solid fa-calendar-plus mr-1"></i> Tạo lịch bảo dưỡng
+            container.innerHTML = `
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h2 class="text-xl font-bold">Lịch bảo dưỡng định kỳ</h2>
+                        <p class="text-xs text-slate-500">Các hạng mục phụ tùng cần kiểm tra, thay thế</p>
+                    </div>
+                    <button onclick="openAddScheduleModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center space-x-1 shadow">
+                        <i class="fa-solid fa-calendar-plus"></i> <span>Tạo lịch mới</span>
                     </button>
                 </div>
-                <div class="bg-white rounded-lg shadow overflow-hidden">
-                    <table class="w-full text-left border-collapse text-sm">
-                        <thead class="bg-gray-50 border-b">
+
+                <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-50 border-b text-xs text-slate-500 uppercase font-semibold">
                             <tr>
-                                <th class="p-3">Xe</th>
-                                <th class="p-3">Hạng mục bảo dưỡng</th>
-                                <th class="p-3">Ngày dự kiến</th>
-                                <th class="p-3">Chi phí dự kiến</th>
-                                <th class="p-3 text-right">Thao tác</th>
+                                <th class="p-4">Phương tiện</th>
+                                <th class="p-4">Hạng mục</th>
+                                <th class="p-4">Ngày dự kiến</th>
+                                <th class="p-4">Chi phí dự toán</th>
+                                <th class="p-4 text-right">Thao tác</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            ${list.length === 0 ? `<tr><td colspan="5" class="p-4 text-center text-gray-500">Không có lịch bảo dưỡng nào sắp tới.</td></tr>` : ''}
+                        <tbody class="divide-y text-slate-700">
                             ${list.map(s => {
-                                const v = myVehicles.find(item => item.id === s.vehicleId);
+                                const v = vehicles.find(x => x.id === s.vehicleId);
                                 return `
-                                    <tr class="border-b hover:bg-gray-50">
-                                        <td class="p-3 font-semibold">${v ? v.name : 'Unknown'} (${v ? v.plate : ''})</td>
-                                        <td class="p-3">${s.serviceName}</td>
-                                        <td class="p-3 text-orange-600 font-medium">${s.date}</td>
-                                        <td class="p-3 font-medium">${s.cost.toLocaleString()} VNĐ</td>
-                                        <td class="p-3 text-right">
-                                            <button onclick="completeSchedule(${s.id})" class="bg-green-600 text-white px-3 py-1 rounded text-xs hover:bg-green-700">
+                                    <tr class="hover:bg-slate-50">
+                                        <td class="p-4 font-bold text-slate-800">${v ? v.name : 'Unknown'} <span class="text-xs font-normal text-slate-400 block">${v ? v.plate : ''}</span></td>
+                                        <td class="p-4">${s.title}</td>
+                                        <td class="p-4 text-amber-600 font-semibold">${s.date}</td>
+                                        <td class="p-4">${s.cost.toLocaleString()} VNĐ</td>
+                                        <td class="p-4 text-right">
+                                            <button onclick="openCompleteScheduleModal(${s.id})" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow">
                                                 <i class="fa-solid fa-check mr-1"></i> Hoàn tất bảo dưỡng
                                             </button>
                                         </td>
                                     </tr>
                                 `;
                             }).join('')}
+                            ${list.length === 0 ? `<tr><td colspan="5" class="p-8 text-center text-slate-400">Không có lịch bảo dưỡng nào sắp tới.</td></tr>` : ''}
                         </tbody>
                     </table>
                 </div>
             `;
         }
 
-        function addNewSchedule() {
-            const myVehicles = DB.get('vehicles').filter(v => v.userId === currentUser.id);
-            if (myVehicles.length === 0) {
-                alert("Bạn cần thêm phương tiện trước!");
-                return;
-            }
-            const vehicleId = parseInt(prompt("Chọn xe bằng ID:\n" + myVehicles.map(v => `${v.id}: ${v.name} (${v.plate})`).join("\n")));
-            const serviceName = prompt("Hạng mục cần làm:", "Thay lốp");
-            const date = prompt("Ngày bảo dưỡng (YYYY-MM-DD):", "2025-04-20");
-            const cost = parseInt(prompt("Chi phí ước lượng (VNĐ):", "300000")) || 0;
-
-            const list = DB.get('schedules');
-            list.push({ id: Date.now(), vehicleId, serviceName, date, cost, status: "pending" });
-            DB.set('schedules', list);
-            renderCurrentTabContent();
-        }
-
-        // <<Extend>> HOÀN TẤT MỘT LỊCH BẢO DƯỠNG -> GHI NHẬN LỊCH SỬ (INCLUDE)
-        function completeSchedule(id) {
-            let schedules = DB.get('schedules');
-            const item = schedules.find(s => s.id === id);
-            if (!item) return;
-
-            const actualCost = parseInt(prompt("Xác nhận chi phí thực tế đã thanh toán (VNĐ):", item.cost)) || item.cost;
-            const note = prompt("Ghi chú phụ tùng / cửa hàng:", "Đã thực hiện xong");
-
-            // 1. Cập nhật trạng thái lịch
-            item.status = "completed";
-            DB.set('schedules', schedules);
-
-            // 2. Ghi nhận vào Lịch sử (UC03)
-            let history = DB.get('history');
-            history.push({
-                id: Date.now(),
-                vehicleId: item.vehicleId,
-                serviceName: item.serviceName,
-                date: new Date().toISOString().split('T')[0],
-                cost: actualCost,
-                notes: note
-            });
-            DB.set('history', history);
-
-            alert("Đã lưu vào lịch sử bảo dưỡng thành công!");
-            renderCurrentTabContent();
-        }
-
+        // ==========================================
         // UC03 - LỊCH SỬ BẢO DƯỠNG
-        function renderHistoryTab(el) {
-            const myVehicles = DB.get('vehicles').filter(v => v.userId === currentUser.id);
-            const vehicleIds = myVehicles.map(v => v.id);
-            const list = DB.get('history').filter(h => vehicleIds.includes(h.vehicleId));
+        // ==========================================
+        function renderHistory(container) {
+            const vehicles = DB.get('vehicles').filter(v => v.userId === currentUser.id);
+            const vIds = vehicles.map(v => v.id);
+            const list = DB.get('history').filter(h => vIds.includes(h.vehicleId));
 
-            el.innerHTML = `
-                <h2 class="text-xl font-bold mb-4">Lịch sử bảo dưỡng phương tiện</h2>
-                <div class="bg-white rounded-lg shadow overflow-hidden">
-                    <table class="w-full text-left border-collapse text-sm">
-                        <thead class="bg-gray-50 border-b">
+            container.innerHTML = `
+                <div class="mb-6">
+                    <h2 class="text-xl font-bold">Lịch sử bảo dưỡng đã thực hiện</h2>
+                    <p class="text-xs text-slate-500">Toàn bộ hồ sơ sửa chữa, bảo trì đã hoàn tất</p>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-50 border-b text-xs text-slate-500 uppercase font-semibold">
                             <tr>
-                                <th class="p-3">Ngày làm</th>
-                                <th class="p-3">Xe</th>
-                                <th class="p-3">Nội dung thực hiện</th>
-                                <th class="p-3">Chi phí</th>
-                                <th class="p-3">Ghi chú</th>
+                                <th class="p-4">Ngày thực hiện</th>
+                                <th class="p-4">Phương tiện</th>
+                                <th class="p-4">Nội dung</th>
+                                <th class="p-4">Chi phí thực tế</th>
+                                <th class="p-4">Ghi chú</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody class="divide-y text-slate-700">
                             ${list.map(h => {
-                                const v = myVehicles.find(x => x.id === h.vehicleId);
+                                const v = vehicles.find(x => x.id === h.vehicleId);
                                 return `
-                                    <tr class="border-b">
-                                        <td class="p-3 font-semibold">${h.date}</td>
-                                        <td class="p-3">${v ? v.name : 'Unknown'}</td>
-                                        <td class="p-3">${h.serviceName}</td>
-                                        <td class="p-3 font-bold text-red-600">${h.cost.toLocaleString()} VNĐ</td>
-                                        <td class="p-3 text-gray-500">${h.notes || '-'}</td>
+                                    <tr class="hover:bg-slate-50">
+                                        <td class="p-4 font-semibold text-slate-800">${h.date}</td>
+                                        <td class="p-4">${v ? v.name : 'Unknown'}</td>
+                                        <td class="p-4">${h.title}</td>
+                                        <td class="p-4 font-bold text-red-600">${h.cost.toLocaleString()} VNĐ</td>
+                                        <td class="p-4 text-xs text-slate-500">${h.note || '-'}</td>
                                     </tr>
                                 `;
                             }).join('')}
+                            ${list.length === 0 ? `<tr><td colspan="5" class="p-8 text-center text-slate-400">Chưa có lịch sử bảo dưỡng nào.</td></tr>` : ''}
                         </tbody>
                     </table>
                 </div>
             `;
         }
 
-        // UC05 - XEM BÁO CÁO CHI PHÍ & XUẤT FILE CSV
-        function renderReportsTab(el) {
-            const myVehicles = DB.get('vehicles').filter(v => v.userId === currentUser.id);
-            const vehicleIds = myVehicles.map(v => v.id);
-            const history = DB.get('history').filter(h => vehicleIds.includes(h.vehicleId));
+        // ==========================================
+        // UC05 - BÁO CÁO CHI PHÍ & XUẤT CSV
+        // ==========================================
+        function renderReports(container) {
+            const vehicles = DB.get('vehicles').filter(v => v.userId === currentUser.id);
+            const vIds = vehicles.map(v => v.id);
+            const history = DB.get('history').filter(h => vIds.includes(h.vehicleId));
 
             const total = history.reduce((sum, item) => sum + item.cost, 0);
 
-            el.innerHTML = `
-                <div class="flex justify-between items-center mb-6">
+            container.innerHTML = `
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
                     <div>
                         <h2 class="text-xl font-bold">Báo cáo & Thống kê chi phí</h2>
-                        <p class="text-gray-500 text-sm">Tổng chi phí bạn đã chi trả cho bảo dưỡng xe</p>
+                        <p class="text-xs text-slate-500">Xem tổng hợp chi phí nuôi xe</p>
                     </div>
-                    <button onclick="exportCSV()" class="bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-emerald-700">
-                        <i class="fa-solid fa-file-csv mr-1"></i> <<Extend>> Xuất báo cáo CSV
+                    <button onclick="exportCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center space-x-2 shadow self-start sm:self-auto">
+                        <i class="fa-solid fa-file-csv"></i> <span><<Extend>> Xuất File CSV</span>
                     </button>
                 </div>
 
-                <!-- STATS CARD -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <div class="bg-white p-5 rounded-lg shadow border-l-4 border-blue-600">
-                        <p class="text-gray-500 text-xs uppercase font-bold">Tổng chi phí bảo dưỡng</p>
-                        <h3 class="text-2xl font-black text-gray-800 mt-1">${total.toLocaleString()} VNĐ</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-l-4 border-l-blue-600">
+                        <div class="text-xs text-slate-400 uppercase font-bold tracking-wide">Tổng tiền đã chi</div>
+                        <div class="text-2xl font-black text-slate-800 mt-2">${total.toLocaleString()} VNĐ</div>
                     </div>
-                    <div class="bg-white p-5 rounded-lg shadow border-l-4 border-emerald-600">
-                        <p class="text-gray-500 text-xs uppercase font-bold">Số lượng xe</p>
-                        <h3 class="text-2xl font-black text-gray-800 mt-1">${myVehicles.length} phương tiện</h3>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-l-4 border-l-emerald-600">
+                        <div class="text-xs text-slate-400 uppercase font-bold tracking-wide">Số phương tiện</div>
+                        <div class="text-2xl font-black text-slate-800 mt-2">${vehicles.length} xe</div>
                     </div>
-                    <div class="bg-white p-5 rounded-lg shadow border-l-4 border-purple-600">
-                        <p class="text-gray-500 text-xs uppercase font-bold">Tổng số lần sửa chữa</p>
-                        <h3 class="text-2xl font-black text-gray-800 mt-1">${history.length} lần</h3>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-l-4 border-l-purple-600">
+                        <div class="text-xs text-slate-400 uppercase font-bold tracking-wide">Tổng lượt sửa/bảo dưỡng</div>
+                        <div class="text-2xl font-black text-slate-800 mt-2">${history.length} lần</div>
                     </div>
                 </div>
 
-                <!-- CHI TIẾT THEO TỪNG XE -->
-                <h3 class="font-bold text-lg mb-3">Chi tiết chi phí theo từng phương tiện</h3>
+                <h3 class="font-bold text-md text-slate-700 mb-3"><i class="fa-solid fa-list mr-1"></i> Báo cáo chi phí theo từng xe</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    ${myVehicles.map(v => {
-                        const vehicleHistory = history.filter(h => h.vehicleId === v.id);
-                        const subTotal = vehicleHistory.reduce((s, i) => s + i.cost, 0);
+                    ${vehicles.map(v => {
+                        const items = history.filter(h => h.vehicleId === v.id);
+                        const vCost = items.reduce((acc, cur) => acc + cur.cost, 0);
                         return `
-                            <div class="bg-white p-4 rounded-lg shadow">
-                                <div class="flex justify-between items-center border-b pb-2 mb-2">
-                                    <h4 class="font-bold text-blue-600">${v.name} (${v.plate})</h4>
-                                    <span class="font-bold text-red-600">${subTotal.toLocaleString()} VNĐ</span>
+                            <div class="bg-white p-5 rounded-xl border shadow-sm">
+                                <div class="flex justify-between items-center border-b pb-2 mb-3">
+                                    <h4 class="font-bold text-slate-800">${v.name} <span class="text-xs font-normal text-slate-400">(${v.plate})</span></h4>
+                                    <span class="font-bold text-red-600">${vCost.toLocaleString()} VNĐ</span>
                                 </div>
-                                <ul class="text-sm space-y-1 text-gray-600">
-                                    ${vehicleHistory.map(h => `<li>• ${h.date}: ${h.serviceName} - ${h.cost.toLocaleString()}đ</li>`).join('')}
-                                    ${vehicleHistory.length === 0 ? `<li class="italic text-gray-400">Chưa có phát sinh chi phí</li>` : ''}
-                                </ul>
+                                <div class="space-y-1.5 text-xs text-slate-600 max-h-40 overflow-y-auto">
+                                    ${items.map(it => `
+                                        <div class="flex justify-between">
+                                            <span>${it.date} - ${it.title}</span>
+                                            <span class="font-medium">${it.cost.toLocaleString()}đ</span>
+                                        </div>
+                                    `).join('')}
+                                    ${items.length === 0 ? `<div class="italic text-slate-400">Chưa phát sinh chi phí</div>` : ''}
+                                </div>
                             </div>
                         `;
                     }).join('')}
@@ -416,126 +389,319 @@
             `;
         }
 
-        // XUẤT CSV (EXTEND UC05)
         function exportCSV() {
-            const myVehicles = DB.get('vehicles').filter(v => v.userId === currentUser.id);
-            const vehicleIds = myVehicles.map(v => v.id);
-            const history = DB.get('history').filter(h => vehicleIds.includes(h.vehicleId));
+            const vehicles = DB.get('vehicles').filter(v => v.userId === currentUser.id);
+            const vIds = vehicles.map(v => v.id);
+            const history = DB.get('history').filter(h => vIds.includes(h.vehicleId));
 
-            let csvContent = "data:text/csv;charset=utf-8,ID,Ngay,PhuongTien,HangMuc,ChiPhi,GhiChu\n";
+            if (history.length === 0) {
+                alert("Chưa có dữ liệu lịch sử để xuất báo cáo!");
+                return;
+            }
+
+            let csv = "\uFEFFMã GD,Ngày,Phương tiện,Hạng mục,Chi phí (VND),Ghi chú\n";
             history.forEach(h => {
-                const v = myVehicles.find(x => x.id === h.vehicleId);
-                csvContent += `${h.id},${h.date},"${v ? v.name : ''}","${h.serviceName}",${h.cost},"${h.notes || ''}"\n`;
+                const v = vehicles.find(x => x.id === h.vehicleId);
+                csv += `${h.id},${h.date},"${v ? v.name : ''}","${h.title}",${h.cost},"${h.note || ''}"\n`;
             });
 
-            const encodedUri = encodeURI(csvContent);
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `BaoCaoChiPhi_${new Date().toISOString().split('T')[0]}.csv`);
-            document.body.appendChild(link);
+            link.href = URL.createObjectURL(blob);
+            link.download = `Bao_Cao_Chi_Phi_${new Date().toISOString().split('T')[0]}.csv`;
             link.click();
-            document.body.removeChild(link);
         }
 
+        // ==========================================
         // QUẢN TRỊ VIÊN (ADMIN DASHBOARD)
-        function renderAdminTab(el) {
+        // ==========================================
+        function renderAdmin(container) {
             const users = DB.get('users');
-            const services = DB.get('services');
+            const cats = DB.get('categories');
 
-            el.innerHTML = `
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- QUẢN LÝ NGƯỜI DÙNG -->
-                    <div class="bg-white p-5 rounded-lg shadow">
-                        <h3 class="font-bold text-lg mb-3">Quản lý tài khoản người dùng</h3>
-                        <table class="w-full text-left text-sm">
-                            <thead class="border-b bg-gray-50">
-                                <tr><th class="p-2">Tên</th><th class="p-2">Email</th><th class="p-2">Vai trò</th></tr>
-                            </thead>
-                            <tbody>
-                                ${users.map(u => `
-                                    <tr class="border-b"><td class="p-2">${u.name}</td><td class="p-2">${u.email}</td><td class="p-2 font-bold">${u.role}</td></tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
+            container.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="bg-white p-6 rounded-xl border shadow-sm">
+                        <h3 class="font-bold text-lg mb-4 text-slate-800"><i class="fa-solid fa-users mr-1"></i> Quản lý tài khoản người dùng</h3>
+                        <div class="divide-y text-sm">
+                            ${users.map(u => `
+                                <div class="py-2.5 flex justify-between items-center">
+                                    <div>
+                                        <p class="font-bold text-slate-700">${u.name}</p>
+                                        <p class="text-xs text-slate-400">${u.email}</p>
+                                    </div>
+                                    <span class="text-xs px-2 py-1 rounded font-bold uppercase ${u.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-green-100 text-green-700'}">${u.role}</span>
+                                </div>
+                            `).join('')}
+                        </div>
                     </div>
 
-                    <!-- QUẢN LÝ DANH MỤC DỊCH VỤ -->
-                    <div class="bg-white p-5 rounded-lg shadow">
-                        <div class="flex justify-between items-center mb-3">
-                            <h3 class="font-bold text-lg">Danh mục dịch vụ chuẩn</h3>
-                            <button onclick="addService()" class="bg-blue-600 text-white px-2 py-1 rounded text-xs">+ Thêm dịch vụ</button>
+                    <div class="bg-white p-6 rounded-xl border shadow-sm">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-bold text-lg text-slate-800"><i class="fa-solid fa-tags mr-1"></i> Quản lý danh mục bảo dưỡng</h3>
+                            <button onclick="openAddCatModal()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1.5 rounded-lg font-semibold">+ Thêm</button>
                         </div>
-                        <table class="w-full text-left text-sm">
-                            <thead class="border-b bg-gray-50">
-                                <tr><th class="p-2">Tên dịch vụ</th><th class="p-2">Giá tham khảo</th></tr>
-                            </thead>
-                            <tbody>
-                                ${services.map(s => `
-                                    <tr class="border-b"><td class="p-2">${s.name}</td><td class="p-2 text-blue-600 font-semibold">${s.basePrice.toLocaleString()} VNĐ</td></tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
+                        <div class="divide-y text-sm">
+                            ${cats.map(c => `
+                                <div class="py-2.5 flex justify-between items-center text-slate-700">
+                                    <span>${c.name}</span>
+                                    <span class="text-xs text-slate-400">ID: ${c.id}</span>
+                                </div>
+                            `).join('')}
+                        </div>
                     </div>
                 </div>
             `;
         }
 
-        function addService() {
-            const name = prompt("Tên dịch vụ mới:");
-            if (!name) return;
-            const basePrice = parseInt(prompt("Giá tiêu chuẩn:", "100000")) || 0;
-            const services = DB.get('services');
-            services.push({ id: Date.now(), name, basePrice });
-            DB.set('services', services);
-            renderCurrentTabContent();
+        // ==========================================
+        // CÁC HÀM XỬ LÝ MODAL (POPUP GIAO DIỆN)
+        // ==========================================
+        const modal = document.getElementById('modal-backdrop');
+        const modalBox = document.getElementById('modal-box');
+
+        function closeModal() {
+            modal.classList.add('hidden');
         }
 
-        // ==========================================
-        // 5. AUTHENTICATION (UC01 - LOGIN / REGISTER)
-        // ==========================================
-        function fillAndLogin(email, pass) {
-            const users = DB.get('users');
-            const user = users.find(u => u.email === email && u.pass === pass);
-            if (user) {
-                currentUser = user;
-                sessionStorage.setItem('vms_currentUser', JSON.stringify(currentUser));
-                currentTab = user.role === 'admin' ? 'admin' : 'vehicles';
-                renderApp();
-            } else {
-                alert("Thông tin đăng nhập không hợp lệ!");
+        function openModal(html) {
+            modalBox.innerHTML = html;
+            modal.classList.remove('hidden');
+        }
+
+        function openAddVehicleModal() {
+            openModal(`
+                <div class="p-6">
+                    <h3 class="font-bold text-lg mb-4">Thêm phương tiện mới</h3>
+                    <div class="space-y-3">
+                        <input id="v-name" type="text" placeholder="Tên phương tiện (vd: Vision 2023)" class="w-full border p-2.5 rounded-lg text-sm">
+                        <input id="v-plate" type="text" placeholder="Biển số (vd: 29A-123.45)" class="w-full border p-2.5 rounded-lg text-sm">
+                        <input id="v-odo" type="number" placeholder="Số Km hiện tại (Odo)" class="w-full border p-2.5 rounded-lg text-sm">
+                        <select id="v-type" class="w-full border p-2.5 rounded-lg text-sm">
+                            <option value="Xe máy">Xe máy</option>
+                            <option value="Ô tô">Ô tô</option>
+                        </select>
+                    </div>
+                    <div class="flex justify-end space-x-2 mt-6">
+                        <button onclick="closeModal()" class="px-4 py-2 border rounded-lg text-sm">Huỷ</button>
+                        <button onclick="submitNewVehicle()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold">Lưu xe</button>
+                    </div>
+                </div>
+            `);
+        }
+
+        function submitNewVehicle() {
+            const name = document.getElementById('v-name').value.trim();
+            const plate = document.getElementById('v-plate').value.trim();
+            const odo = parseInt(document.getElementById('v-odo').value) || 0;
+            const type = document.getElementById('v-type').value;
+
+            if (!name || !plate) return alert("Vui lòng nhập tên và biển số xe!");
+
+            const list = DB.get('vehicles');
+            list.push({ id: Date.now(), userId: currentUser.id, name, plate, odo, type });
+            DB.set('vehicles', list);
+            closeModal();
+            renderTabContent();
+        }
+
+        function deleteVehicle(id) {
+            if (confirm("Bạn có chắc chắn muốn xoá xe này?")) {
+                let list = DB.get('vehicles').filter(v => v.id !== id);
+                DB.set('vehicles', list);
+                renderTabContent();
             }
         }
 
-        function handleLogout() {
-            sessionStorage.removeItem('vms_currentUser');
+        function openAddScheduleModal() {
+            const vehicles = DB.get('vehicles').filter(v => v.userId === currentUser.id);
+            if (vehicles.length === 0) return alert("Bạn cần thêm xe trước khi tạo lịch!");
+
+            openModal(`
+                <div class="p-6">
+                    <h3 class="font-bold text-lg mb-4">Đặt lịch bảo dưỡng mới</h3>
+                    <div class="space-y-3">
+                        <select id="s-veh" class="w-full border p-2.5 rounded-lg text-sm">
+                            ${vehicles.map(v => `<option value="${v.id}">${v.name} (${v.plate})</option>`).join('')}
+                        </select>
+                        <input id="s-title" type="text" placeholder="Hạng mục bảo dưỡng (vd: Thay lọc gió)" class="w-full border p-2.5 rounded-lg text-sm">
+                        <input id="s-date" type="date" class="w-full border p-2.5 rounded-lg text-sm">
+                        <input id="s-cost" type="number" placeholder="Dự toán chi phí (VNĐ)" class="w-full border p-2.5 rounded-lg text-sm">
+                    </div>
+                    <div class="flex justify-end space-x-2 mt-6">
+                        <button onclick="closeModal()" class="px-4 py-2 border rounded-lg text-sm">Huỷ</button>
+                        <button onclick="submitNewSchedule()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold">Tạo lịch</button>
+                    </div>
+                </div>
+            `);
+        }
+
+        function submitNewSchedule() {
+            const vehicleId = parseInt(document.getElementById('s-veh').value);
+            const title = document.getElementById('s-title').value.trim();
+            const date = document.getElementById('s-date').value;
+            const cost = parseInt(document.getElementById('s-cost').value) || 0;
+
+            if (!title || !date) return alert("Vui lòng điền đủ thông tin!");
+
+            const list = DB.get('schedules');
+            list.push({ id: Date.now(), vehicleId, title, date, cost, status: "pending" });
+            DB.set('schedules', list);
+            closeModal();
+            renderTabContent();
+        }
+
+        function openCompleteScheduleModal(scheduleId) {
+            const s = DB.get('schedules').find(i => i.id === scheduleId);
+            if (!s) return;
+
+            openModal(`
+                <div class="p-6">
+                    <h3 class="font-bold text-lg mb-2 text-emerald-600"><i class="fa-solid fa-circle-check mr-1"></i> Hoàn tất bảo dưỡng</h3>
+                    <p class="text-xs text-slate-500 mb-4">Ghi nhận chi phí thực tế vào Lịch sử (UC03)</p>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="text-xs font-bold text-slate-500">Hạng mục:</label>
+                            <div class="font-semibold text-slate-800">${s.title}</div>
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-500">Chi phí thanh toán thực tế (VNĐ):</label>
+                            <input id="c-cost" type="number" value="${s.cost}" class="w-full border p-2.5 rounded-lg text-sm">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-500">Ghi chú gara / phụ tùng:</label>
+                            <input id="c-note" type="text" placeholder="Đã thay tại HEAD..." class="w-full border p-2.5 rounded-lg text-sm">
+                        </div>
+                    </div>
+                    <div class="flex justify-end space-x-2 mt-6">
+                        <button onclick="closeModal()" class="px-4 py-2 border rounded-lg text-sm">Đóng</button>
+                        <button onclick="submitCompleteSchedule(${scheduleId})" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-semibold">Xác nhận hoàn tất</button>
+                    </div>
+                </div>
+            `);
+        }
+
+        function submitCompleteSchedule(scheduleId) {
+            let schedules = DB.get('schedules');
+            const item = schedules.find(i => i.id === scheduleId);
+            if (!item) return;
+
+            const cost = parseInt(document.getElementById('c-cost').value) || item.cost;
+            const note = document.getElementById('c-note').value;
+
+            // Đổi trạng thái lịch
+            item.status = "completed";
+            DB.set('schedules', schedules);
+
+            // Ghi nhận vào lịch sử (<<Include>>)
+            let history = DB.get('history');
+            history.push({
+                id: Date.now(),
+                vehicleId: item.vehicleId,
+                title: item.title,
+                date: new Date().toISOString().split('T')[0],
+                cost: cost,
+                note: note
+            });
+            DB.set('history', history);
+
+            closeModal();
+            renderTabContent();
+        }
+
+        function openAddCatModal() {
+            const name = prompt("Tên danh mục bảo dưỡng mới:");
+            if (name) {
+                const cats = DB.get('categories');
+                cats.push({ id: Date.now(), name });
+                DB.set('categories', cats);
+                renderTabContent();
+            }
+        }
+
+        // ==========================================
+        // AUTH ACTIONS
+        // ==========================================
+        function quickLogin(email) {
+            const user = DB.get('users').find(u => u.email === email);
+            if (user) {
+                currentUser = user;
+                sessionStorage.setItem('pv_auth', JSON.stringify(currentUser));
+                activeTab = user.role === 'admin' ? 'admin' : 'vehicles';
+                renderApp();
+            }
+        }
+
+        function logout() {
+            sessionStorage.removeItem('pv_auth');
             currentUser = null;
             renderApp();
         }
 
-        function renderLoginModal(isLogin) {
-            const email = prompt("Nhập Email:", "user@gmail.com");
-            if (!email) return;
-            const pass = prompt("Nhập mật khẩu:", "123456");
-            if (!pass) return;
+        function openLoginModal() {
+            openModal(`
+                <div class="p-6">
+                    <h3 class="font-bold text-lg mb-4 text-center">Đăng nhập tài khoản</h3>
+                    <div class="space-y-3">
+                        <input id="l-email" type="email" placeholder="Email (user@demo.com)" class="w-full border p-2.5 rounded-lg text-sm">
+                        <input id="l-pass" type="password" placeholder="Mật khẩu (123456)" class="w-full border p-2.5 rounded-lg text-sm">
+                    </div>
+                    <button onclick="submitLogin()" class="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-lg text-sm font-semibold">Đăng nhập</button>
+                    <p class="text-xs text-center text-slate-400 mt-3">Tài khoản mẫu: user@demo.com | pass: 123456</p>
+                </div>
+            `);
+        }
 
-            if (isLogin) {
-                fillAndLogin(email, pass);
+        function submitLogin() {
+            const email = document.getElementById('l-email').value;
+            const pass = document.getElementById('l-pass').value;
+            const user = DB.get('users').find(u => u.email === email && u.pass === pass);
+            if (user) {
+                currentUser = user;
+                sessionStorage.setItem('pv_auth', JSON.stringify(currentUser));
+                closeModal();
+                activeTab = user.role === 'admin' ? 'admin' : 'vehicles';
+                renderApp();
             } else {
-                const name = prompt("Họ và tên của bạn:", "Người dùng mới");
-                const users = DB.get('users');
-                if (users.find(u => u.email === email)) {
-                    alert("Email này đã được đăng ký!");
-                    return;
-                }
-                const newUser = { id: Date.now(), name, email, pass, role: "owner" };
-                users.push(newUser);
-                DB.set('users', users);
-                alert("Đăng ký thành công! Hãy đăng nhập.");
-                fillAndLogin(email, pass);
+                alert("Email hoặc mật khẩu không chính xác!");
             }
         }
 
-        // Khởi động trang web
+        function openRegisterModal() {
+            openModal(`
+                <div class="p-6">
+                    <h3 class="font-bold text-lg mb-4 text-center">Đăng ký tài khoản</h3>
+                    <div class="space-y-3">
+                        <input id="r-name" type="text" placeholder="Họ và tên" class="w-full border p-2.5 rounded-lg text-sm">
+                        <input id="r-email" type="email" placeholder="Email" class="w-full border p-2.5 rounded-lg text-sm">
+                        <input id="r-pass" type="password" placeholder="Mật khẩu" class="w-full border p-2.5 rounded-lg text-sm">
+                    </div>
+                    <button onclick="submitRegister()" class="w-full mt-4 bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-lg text-sm font-semibold">Đăng ký ngay</button>
+                </div>
+            `);
+        }
+
+        function submitRegister() {
+            const name = document.getElementById('r-name').value.trim();
+            const email = document.getElementById('r-email').value.trim();
+            const pass = document.getElementById('r-pass').value;
+
+            if (!name || !email || !pass) return alert("Vui lòng điền đủ thông tin!");
+
+            const users = DB.get('users');
+            if (users.find(u => u.email === email)) return alert("Email này đã được dùng!");
+
+            const newUser = { id: Date.now(), name, email, pass, role: "owner" };
+            users.push(newUser);
+            DB.set('users', users);
+
+            currentUser = newUser;
+            sessionStorage.setItem('pv_auth', JSON.stringify(currentUser));
+            closeModal();
+            renderApp();
+        }
+
+        // Khởi chạy ứng dụng
         renderApp();
     </script>
 </body>
