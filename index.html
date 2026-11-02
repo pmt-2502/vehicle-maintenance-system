@@ -25,7 +25,7 @@
             }
         }
     </script>
-    <!-- Google Fonts & FontAwesome -->
+    <!-- Fonts & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -53,60 +53,55 @@
     <!-- TOAST NOTIFICATION CONTAINER -->
     <div id="toast-container" class="fixed top-5 right-5 z-[9999] flex flex-col space-y-2 pointer-events-none"></div>
 
-    <!-- MAIN APP WRAPPER -->
-    <div id="app-root" class="min-h-screen flex flex-col">
-        <!-- Render động qua JavaScript -->
-    </div>
+    <!-- MAIN APP CONTAINER -->
+    <div id="app-root" class="min-h-screen flex flex-col"></div>
 
     <!-- MODAL CONTAINER -->
     <div id="modal-container" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[999] hidden flex items-center justify-center p-4">
         <div id="modal-content" class="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto custom-scrollbar transform transition-all scale-95 opacity-0"></div>
     </div>
 
-    <!-- JAVASCRIPT LOGIC LAYER -->
+    <!-- JAVASCRIPT: CONTROLLER & DATA LAYER -->
     <script>
         /**
-         * 1. DATABASE ENGINE MÔ PHỎNG TRÊN LOCALSTORAGE
+         * 1. DATABASE LOCALSTORAGE
          */
         const DB = {
             init() {
-                // Khởi tạo tài khoản gồm 3 thành viên nhóm & Quản trị viên
-                if (!localStorage.getItem('pvmis_users_v2')) {
+                // Phiên bản dữ liệu v3: Avatar Anime Chibi & Ảnh xe chuẩn hoạt động 100%
+                if (!localStorage.getItem('pvmis_users_v3')) {
                     const defaultUsers = [
-                        { id: 1, name: "Lê Thị Thu", email: "lethithu@gmail.com", pass: "123456", role: "owner", avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80" },
-                        { id: 2, name: "Tạ Đức Quyết", email: "taducquyet@gmail.com", pass: "123456", role: "owner", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80" },
-                        { id: 3, name: "Phạm Minh Tâm", email: "phamminhtam@gmail.com", pass: "123456", role: "owner", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80" },
-                        { id: 4, name: "Quản trị viên Hệ thống", email: "admin@pvmis.edu.vn", pass: "123456", role: "admin", avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80" }
+                        { id: 1, name: "Lê Thị Thu", email: "lethithu@gmail.com", pass: "123456", role: "owner", avatar: "https://api.dicebear.com/7.x/adventurer/svg?seed=ThuLe&backgroundColor=ffd5dc" },
+                        { id: 2, name: "Tạ Đức Quyết", email: "taducquyet@gmail.com", pass: "123456", role: "owner", avatar: "https://api.dicebear.com/7.x/adventurer/svg?seed=QuyetTa&backgroundColor=c0aede" },
+                        { id: 3, name: "Phạm Minh Tâm", email: "phamminhtam@gmail.com", pass: "123456", role: "owner", avatar: "https://api.dicebear.com/7.x/adventurer/svg?seed=TamPham&backgroundColor=b6e3f4" },
+                        { id: 4, name: "Quản trị viên Hệ thống", email: "admin@pvmis.edu.vn", pass: "123456", role: "admin", avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=AdminBot&backgroundColor=d1d4f9" }
                     ];
-                    localStorage.setItem('pvmis_users_v2', JSON.stringify(defaultUsers));
+                    localStorage.setItem('pvmis_users_v3', JSON.stringify(defaultUsers));
                 }
 
-                // Dữ liệu xe phong phú kèm hình ảnh chất lượng cao
-                if (!localStorage.getItem('pvmis_vehicles_v2')) {
+                if (!localStorage.getItem('pvmis_vehicles_v3')) {
                     const defaultVehicles = [
-                        { id: 101, userId: 1, name: "Honda SH 150i ABS", plate: "29-G1 888.88", odo: 12500, type: "Xe máy", image: "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=600&q=80", color: "Trắng Ngọc Trai", year: 2022 },
-                        { id: 102, userId: 1, name: "Mazda 3 Luxury", plate: "30H-689.79", odo: 38400, type: "Ô tô", image: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=600&q=80", color: "Đỏ Soul Red", year: 2021 },
-                        { id: 103, userId: 2, name: "VinFast VF8 Plus", plate: "51K-999.28", odo: 21000, type: "Ô tô điện", image: "https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=600&q=80", color: "Xanh Deep Ocean", year: 2023 },
-                        { id: 104, userId: 2, name: "Yamaha Exciter 155 VVA", plate: "29-F2 345.67", odo: 8600, type: "Xe côn tay", image: "https://images.unsplash.com/photo-1609630875171-b1321377ee65?auto=format&fit=crop&w=600&q=80", color: "Xanh GP", year: 2022 },
-                        { id: 105, userId: 3, name: "Honda CR-V L-Turbo", plate: "30A-777.66", odo: 54000, type: "Ô tô SUV", image: "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=600&q=80", color: "Đen Titan", year: 2020 },
-                        { id: 106, userId: 3, name: "Vespa Sprint S 150", plate: "29-D1 567.89", odo: 6200, type: "Xe máy", image: "https://images.unsplash.com/photo-1596706247959-1e35fa8ffb09?auto=format&fit=crop&w=600&q=80", color: "Vàng Nắng", year: 2023 }
+                        { id: 101, userId: 1, name: "Honda SH 150i ABS", plate: "29-G1 888.88", odo: 12500, type: "Xe máy", image: "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=700&q=80", color: "Trắng Ngọc Trai", year: 2022 },
+                        { id: 102, userId: 1, name: "Mazda 3 Luxury Sedan", plate: "30H-689.79", odo: 38400, type: "Ô tô", image: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=700&q=80", color: "Đỏ Soul Red", year: 2021 },
+                        { id: 103, userId: 2, name: "VinFast VF8 Plus", plate: "51K-999.28", odo: 21000, type: "Ô tô điện", image: "https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=700&q=80", color: "Xanh Deep Ocean", year: 2023 },
+                        { id: 104, userId: 2, name: "Yamaha Exciter 155 VVA", plate: "29-F2 345.67", odo: 8600, type: "Xe côn tay", image: "https://images.unsplash.com/photo-1609630875171-b1321377ee65?auto=format&fit=crop&w=700&q=80", color: "Xanh GP", year: 2022 },
+                        { id: 105, userId: 3, name: "Honda CR-V L-Turbo", plate: "30A-777.66", odo: 54000, type: "Ô tô SUV", image: "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=700&q=80", color: "Đen Titan", year: 2020 },
+                        { id: 106, userId: 3, name: "Vespa Sprint S 150", plate: "29-D1 567.89", odo: 6200, type: "Xe máy", image: "https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&w=700&q=80", color: "Vàng Nắng", year: 2023 }
                     ];
-                    localStorage.setItem('pvmis_vehicles_v2', JSON.stringify(defaultVehicles));
+                    localStorage.setItem('pvmis_vehicles_v3', JSON.stringify(defaultVehicles));
                 }
 
-                // Danh mục lịch bảo dưỡng nhắc việc
-                if (!localStorage.getItem('pvmis_schedules_v2')) {
+                if (!localStorage.getItem('pvmis_schedules_v3')) {
                     const defaultSchedules = [
                         { id: 201, vehicleId: 101, serviceName: "Thay dầu nhớt máy tổng hợp & Dầu láp", date: "2025-04-10", cost: 320000, status: "pending", location: "Honda Head Kường Ngân", notes: "Yêu cầu thay nhớt Motul Scooter Expert" },
                         { id: 202, vehicleId: 102, serviceName: "Bảo dưỡng định kỳ cấp lớn 40.000 KM", date: "2025-05-15", cost: 4500000, status: "pending", location: "Mazda Lê Văn Lương", notes: "Kiểm tra má phanh, lọc gió động cơ, bugi" },
                         { id: 203, vehicleId: 103, serviceName: "Bảo dưỡng hệ thống làm mát Pin & Điều hòa", date: "2025-04-25", cost: 1200000, status: "pending", location: "VinFast Smart City", notes: "Cập nhật phần mềm ECU phiên bản mới" },
                         { id: 204, vehicleId: 105, serviceName: "Thay bộ lốp Michelin Primacy 4", date: "2025-04-30", cost: 9800000, status: "pending", location: "Michelin Car Service", notes: "Cân bằng động và chỉnh chụm bánh lái" }
                     ];
-                    localStorage.setItem('pvmis_schedules_v2', JSON.stringify(defaultSchedules));
+                    localStorage.setItem('pvmis_schedules_v3', JSON.stringify(defaultSchedules));
                 }
 
-                // Lịch sử bảo dưỡng thực tế
-                if (!localStorage.getItem('pvmis_history_v2')) {
+                if (!localStorage.getItem('pvmis_history_v3')) {
                     const defaultHistory = [
                         { id: 301, vehicleId: 101, serviceName: "Bảo dưỡng định kỳ mốc 10.000 km", date: "2025-01-10", cost: 650000, provider: "Honda Head", notes: "Thay nhớt máy, vệ sinh nồi xe, lọc gió" },
                         { id: 302, vehicleId: 101, serviceName: "Thay cặp lốp Michelin City Grip Pro", date: "2025-02-18", cost: 1850000, provider: "Đại lý Michelin", notes: "Bao gồm van vòi và công lắp đặt cân vành" },
@@ -114,11 +109,10 @@
                         { id: 304, vehicleId: 103, serviceName: "Bảo dưỡng 15.000 KM & Vệ sinh phanh tái sinh", date: "2025-01-28", cost: 780000, provider: "VinFast Service", notes: "Xe hoạt động ổn định, pin SOH 99%" },
                         { id: 305, vehicleId: 105, serviceName: "Thay ắc quy Varta Silver Dynamic AGM", date: "2025-03-01", cost: 3200000, provider: "Ắc quy 24/7", notes: "Bảo hành 24 tháng chính hãng" }
                     ];
-                    localStorage.setItem('pvmis_history_v2', JSON.stringify(defaultHistory));
+                    localStorage.setItem('pvmis_history_v3', JSON.stringify(defaultHistory));
                 }
 
-                // Dịch vụ chuẩn cho Admin
-                if (!localStorage.getItem('pvmis_services_v2')) {
+                if (!localStorage.getItem('pvmis_services_v3')) {
                     const defaultServices = [
                         { id: 1, name: "Thay dầu động cơ xe máy", category: "Xe máy", basePrice: 150000, intervalKm: 2000 },
                         { id: 2, name: "Bảo dưỡng toàn bộ nồi xe tay ga", category: "Xe máy", basePrice: 250000, intervalKm: 8000 },
@@ -127,11 +121,11 @@
                         { id: 5, name: "Cân chỉnh góc đặt bánh xe điện tử", category: "Ô tô", basePrice: 600000, intervalKm: 10000 },
                         { id: 6, name: "Kiểm tra tổng quát hệ thống pin xe điện", category: "Ô tô điện", basePrice: 800000, intervalKm: 12000 }
                     ];
-                    localStorage.setItem('pvmis_services_v2', JSON.stringify(defaultServices));
+                    localStorage.setItem('pvmis_services_v3', JSON.stringify(defaultServices));
                 }
             },
-            get(key) { return JSON.parse(localStorage.getItem('pvmis_' + key + '_v2') || '[]'); },
-            set(key, data) { localStorage.setItem('pvmis_' + key + '_v2', JSON.stringify(data)); }
+            get(key) { return JSON.parse(localStorage.getItem('pvmis_' + key + '_v3') || '[]'); },
+            set(key, data) { localStorage.setItem('pvmis_' + key + '_v3', JSON.stringify(data)); }
         };
 
         DB.init();
@@ -139,13 +133,16 @@
         /**
          * 2. STATE MANAGER
          */
-        let currentUser = JSON.parse(sessionStorage.getItem('pvmis_currentUser')) || null;
+        let currentUser = JSON.parse(sessionStorage.getItem('pvmis_currentUser_v3')) || null;
         let currentTab = 'vehicles'; // 'vehicles' | 'schedules' | 'history' | 'reports' | 'admin'
 
-        // Helpers
         function formatVND(number) {
             return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(number || 0);
         }
+
+        // Dự phòng chống lỗi ảnh
+        const FALLBACK_MOTO_IMG = "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=700&q=80";
+        const FALLBACK_CAR_IMG = "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=700&q=80";
 
         function showToast(message, type = 'success') {
             const container = document.getElementById('toast-container');
@@ -155,13 +152,7 @@
                 error: 'fa-circle-exclamation text-rose-500',
                 info: 'fa-circle-info text-blue-500'
             };
-            const bgColors = {
-                success: 'border-emerald-200 bg-white',
-                error: 'border-rose-200 bg-white',
-                info: 'border-blue-200 bg-white'
-            };
-
-            toast.className = `flex items-center space-x-3 px-4 py-3 rounded-xl shadow-lg border text-sm pointer-events-auto transform transition-all duration-300 translate-y-2 opacity-0 ${bgColors[type] || bgColors.info}`;
+            toast.className = `flex items-center space-x-3 px-4 py-3 rounded-xl shadow-lg border border-slate-200 bg-white text-sm pointer-events-auto transform transition-all duration-300 translate-y-2 opacity-0`;
             toast.innerHTML = `
                 <i class="fa-solid ${icons[type] || icons.info} text-lg"></i>
                 <span class="font-medium text-slate-700">${message}</span>
@@ -216,8 +207,8 @@
                         <div class="flex justify-between items-center h-16">
                             <!-- Logo Brand -->
                             <div class="flex items-center space-x-3">
-                                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-400 flex items-center justify-center text-white shadow-md shadow-brand-500/20">
-                                    <i class="fa-solid fa-wrench text-lg"></i>
+                                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-brand-500/20">
+                                    <i class="fa-solid fa-screwdriver-wrench text-lg"></i>
                                 </div>
                                 <div>
                                     <h1 class="font-extrabold text-base sm:text-lg tracking-tight text-slate-900 leading-none">PVMIS</h1>
@@ -228,10 +219,10 @@
                             <!-- Right Profile Controls -->
                             <div class="flex items-center space-x-3 sm:space-x-4">
                                 <div class="flex items-center space-x-3 pr-2 border-r border-slate-200">
-                                    <img src="${currentUser.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100'}" class="w-9 h-9 rounded-full object-cover ring-2 ring-brand-500/20 shadow-sm" alt="User Avatar">
+                                    <img src="${currentUser.avatar}" class="w-10 h-10 rounded-full border border-slate-200 p-0.5 bg-slate-100 shadow-sm" alt="User Avatar">
                                     <div class="hidden sm:block text-left">
                                         <div class="font-bold text-sm text-slate-800 leading-tight">${currentUser.name}</div>
-                                        <div class="text-[11px] font-medium text-brand-600 uppercase tracking-wider">${currentUser.role === 'admin' ? 'Quản trị viên' : 'Chủ sở hữu xe'}</div>
+                                        <div class="text-[11px] font-bold text-brand-600 uppercase tracking-wider">${currentUser.role === 'admin' ? 'Quản trị viên' : 'Chủ sở hữu xe'}</div>
                                     </div>
                                 </div>
 
@@ -274,7 +265,7 @@
                             `}
                         </div>
 
-                        <!-- Right Actions -->
+                        <!-- Trạng thái -->
                         <div class="flex items-center space-x-3">
                             <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
                                 <span class="w-2 h-2 rounded-full bg-emerald-500 mr-2 animate-pulse"></span>
@@ -290,7 +281,7 @@
                 <!-- FOOTER -->
                 <footer class="mt-auto bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-500">
                     <p class="font-medium">Đề tài: <b>Personal Vehicle Maintenance Information System</b></p>
-                    <p class="mt-1 text-slate-400">Thực hiện bởi: Lê Thị Thu - Tạ Đức Quyết - Phạm Minh Tâm</p>
+                    <p class="mt-1 text-slate-400">Nhóm thực hiện: Lê Thị Thu - Tạ Đức Quyết - Phạm Minh Tâm</p>
                 </footer>
             `;
 
@@ -314,10 +305,9 @@
         }
 
         /**
-         * 4. AUTHENTICATION & LOGIN SCREEN
+         * 4. AUTHENTICATION & LOGIN (ĐÃ BỎ NÚT 1 CHẠM - YÊU CẦU NHẬP ĐẦY ĐỦ EMAIL & PASS)
          */
         function renderAuthScreen() {
-            const users = DB.get('users');
             return `
                 <div class="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 flex items-center justify-center p-4">
                     <div class="w-full max-w-4xl grid grid-cols-1 lg:grid-cols-12 bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-100">
@@ -346,49 +336,41 @@
                         <div class="lg:col-span-7 p-8 sm:p-10 flex flex-col justify-center">
                             <div class="mb-6">
                                 <h3 class="text-2xl font-black text-slate-800">Đăng nhập hệ thống</h3>
-                                <p class="text-slate-500 text-sm mt-1">Chọn tài khoản thành viên để đăng nhập ngay lập tức</p>
+                                <p class="text-slate-500 text-sm mt-1">Vui lòng nhập Email và Mật khẩu tài khoản để tiếp tục</p>
                             </div>
 
-                            <!-- QUICK LOGIN BUTTONS (3 THÀNH VIÊN + ADMIN) -->
-                            <div class="mb-6">
-                                <label class="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-2.5">Đăng nhập nhanh 1 chạm (Khuyên dùng):</label>
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                                    ${users.map(u => `
-                                        <button onclick="fillAndLogin('${u.email}', '${u.pass}')" class="flex items-center space-x-3 p-2.5 rounded-xl border border-slate-200 hover:border-brand-500 hover:bg-brand-50/50 transition text-left group">
-                                            <img src="${u.avatar}" class="w-10 h-10 rounded-lg object-cover ring-1 ring-slate-200">
-                                            <div class="overflow-hidden">
-                                                <div class="text-xs font-bold text-slate-800 truncate group-hover:text-brand-600">${u.name}</div>
-                                                <div class="text-[11px] text-slate-400 truncate">${u.role === 'admin' ? 'Quản trị viên' : 'Chủ sở hữu xe'}</div>
-                                            </div>
-                                        </button>
-                                    `).join('')}
+                            <!-- BẢNG GỢI Ý THÔNG TIN TÀI KHOẢN CHO THẦY & NGƯỜI CHẤM -->
+                            <div class="mb-6 p-3.5 bg-slate-50 rounded-xl border border-slate-200 text-xs">
+                                <p class="font-bold text-slate-700 mb-1.5 flex items-center">
+                                    <i class="fa-solid fa-key text-brand-600 mr-1.5"></i> Danh sách tài khoản thử nghiệm:
+                                </p>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-slate-600">
+                                    <p>• <b>Lê Thị Thu:</b> lethithu@gmail.com</p>
+                                    <p>• <b>Tạ Đức Quyết:</b> taducquyet@gmail.com</p>
+                                    <p>• <b>Phạm Minh Tâm:</b> phamminhtam@gmail.com</p>
+                                    <p>• <b>Quản trị viên:</b> admin@pvmis.edu.vn</p>
                                 </div>
+                                <p class="text-[11px] text-slate-400 mt-2 italic">* Mật khẩu chung mặc định cho tất cả tài khoản: <b>123456</b></p>
                             </div>
 
-                            <div class="relative flex py-2 items-center mb-6">
-                                <div class="flex-grow border-t border-slate-200"></div>
-                                <span class="flex-shrink mx-4 text-slate-400 text-xs uppercase font-medium">hoặc đăng nhập thủ công</span>
-                                <div class="flex-grow border-t border-slate-200"></div>
-                            </div>
-
-                            <!-- MANUAL FORM -->
+                            <!-- MANUAL FORM (BẮT BUỘC NHẬP BẢO MẬT) -->
                             <form onsubmit="handleManualLogin(event)" class="space-y-4">
                                 <div>
-                                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Email</label>
+                                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Địa chỉ Email *</label>
                                     <div class="relative">
                                         <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400 text-sm"><i class="fa-regular fa-envelope"></i></span>
-                                        <input type="email" id="login-email" required value="lethithu@gmail.com" class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm">
+                                        <input type="email" id="login-email" required placeholder="Nhập địa chỉ email..." class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm">
                                     </div>
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Mật khẩu</label>
+                                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Mật khẩu *</label>
                                     <div class="relative">
                                         <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400 text-sm"><i class="fa-solid fa-lock"></i></span>
-                                        <input type="password" id="login-pass" required value="123456" class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm">
+                                        <input type="password" id="login-pass" required placeholder="Nhập mật khẩu..." class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm">
                                     </div>
                                 </div>
                                 <button type="submit" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-2.5 rounded-xl text-sm transition shadow-lg shadow-brand-500/25">
-                                    Đăng nhập vào bảng điều khiển
+                                    <i class="fa-solid fa-arrow-right-to-bracket mr-1.5"></i> Xác thực & Đăng nhập
                                 </button>
                             </form>
                         </div>
@@ -397,31 +379,28 @@
             `;
         }
 
-        function fillAndLogin(email, pass) {
+        function handleManualLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value.trim();
+            const pass = document.getElementById('login-pass').value.trim();
+
             const users = DB.get('users');
-            const user = users.find(u => u.email === email && u.pass === pass);
+            const user = users.find(u => u.email.toLowerCase() === email.toLowerCase() && u.pass === pass);
             if (user) {
                 currentUser = user;
-                sessionStorage.setItem('pvmis_currentUser', JSON.stringify(currentUser));
+                sessionStorage.setItem('pvmis_currentUser_v3', JSON.stringify(currentUser));
                 currentTab = user.role === 'admin' ? 'admin' : 'vehicles';
-                showToast(`Chào mừng trở lại, ${user.name}!`, 'success');
+                showToast(`Chào mừng bạn ${user.name} đã đăng nhập!`, 'success');
                 renderApp();
             } else {
-                showToast("Thông tin đăng nhập không chính xác!", "error");
+                showToast("Email hoặc mật khẩu không chính xác!", "error");
             }
         }
 
-        function handleManualLogin(e) {
-            e.preventDefault();
-            const email = document.getElementById('login-email').value;
-            const pass = document.getElementById('login-pass').value;
-            fillAndLogin(email, pass);
-        }
-
         function handleLogout() {
-            sessionStorage.removeItem('pvmis_currentUser');
+            sessionStorage.removeItem('pvmis_currentUser_v3');
             currentUser = null;
-            showToast("Đã đăng xuất khỏi phiên làm việc an toàn", "info");
+            showToast("Đã đăng xuất an toàn khỏi hệ thống", "info");
             renderApp();
         }
 
@@ -455,11 +434,14 @@
                             const vSchedules = DB.get('schedules').filter(s => s.vehicleId === v.id && s.status === 'pending');
                             const vHistory = DB.get('history').filter(h => h.vehicleId === v.id);
                             const spent = vHistory.reduce((sum, i) => sum + i.cost, 0);
+                            const fallbackImg = v.type.includes('Ô tô') ? FALLBACK_CAR_IMG : FALLBACK_MOTO_IMG;
 
                             return `
                                 <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition duration-200 flex flex-col">
-                                    <div class="relative h-44 w-full bg-slate-100 overflow-hidden">
-                                        <img src="${v.image || 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=600'}" class="w-full h-full object-cover">
+                                    <div class="relative h-48 w-full bg-slate-100 overflow-hidden">
+                                        <img src="${v.image || fallbackImg}" 
+                                             onerror="this.onerror=null; this.src='${fallbackImg}';" 
+                                             class="w-full h-full object-cover">
                                         <div class="absolute top-3 left-3">
                                             <span class="px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wider bg-white/90 backdrop-blur-md text-slate-800 shadow-sm">${v.type}</span>
                                         </div>
@@ -523,7 +505,7 @@
                     <form onsubmit="handleCreateVehicle(event)" class="space-y-4 mt-4">
                         <div>
                             <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Tên xe / Model *</label>
-                            <input type="text" id="veh-name" required placeholder="vd: Honda SH 150i, Mazda CX-5..." class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                            <input type="text" id="veh-name" required placeholder="vd: Honda Air Blade 160, Toyota Corolla..." class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
                         </div>
                         <div class="grid grid-cols-2 gap-3">
                             <div>
@@ -536,6 +518,7 @@
                                     <option value="Xe máy">Xe máy</option>
                                     <option value="Xe côn tay">Xe côn tay</option>
                                     <option value="Ô tô">Ô tô xăng / dầu</option>
+                                    <option value="Ô tô SUV">Ô tô SUV</option>
                                     <option value="Ô tô điện">Ô tô điện</option>
                                 </select>
                             </div>
@@ -553,7 +536,7 @@
                         <div>
                             <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Ảnh phương tiện (URL ảnh)</label>
                             <input type="url" id="veh-img" placeholder="https://images.unsplash.com/..." class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
-                            <p class="text-[11px] text-slate-400 mt-1">Để trống hệ thống sẽ tự gắn ảnh mặc định chất lượng cao.</p>
+                            <p class="text-[11px] text-slate-400 mt-1">Để trống hệ thống sẽ tự động gán ảnh phù hợp theo phân loại xe.</p>
                         </div>
                         <div class="pt-4 flex justify-end space-x-3">
                             <button type="button" onclick="closeModal()" class="px-4 py-2 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50">Huỷ bỏ</button>
@@ -574,9 +557,7 @@
             let image = document.getElementById('veh-img').value.trim();
 
             if (!image) {
-                image = type.includes('Ô tô') 
-                    ? "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=600&q=80" 
-                    : "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=600&q=80";
+                image = type.includes('Ô tô') ? FALLBACK_CAR_IMG : FALLBACK_MOTO_IMG;
             }
 
             const vehicles = DB.get('vehicles');
@@ -615,10 +596,10 @@
         }
 
         function deleteVehicle(id) {
-            if (confirm("Bạn có chắc chắn muốn xoá phương tiện này và toàn bộ dữ liệu liên quan?")) {
+            if (confirm("Bạn có chắc chắn muốn xoá phương tiện này khỏi danh sách?")) {
                 let vehicles = DB.get('vehicles').filter(v => v.id !== id);
                 DB.set('vehicles', vehicles);
-                showToast("Đã xoá phương tiện khỏi hồ sơ cá nhân", "info");
+                showToast("Đã xoá phương tiện thành công", "info");
                 renderCurrentTabContent();
             }
         }
@@ -778,9 +759,6 @@
             renderCurrentTabContent();
         }
 
-        /**
-         * EXTEND USE CASE: HOÀN TẤT BẢO DƯỠNG -> GHI NHẬN VÀO NHẬT KÝ LỊCH SỬ (UC03)
-         */
         function completeScheduleFlow(id) {
             const schedules = DB.get('schedules');
             const item = schedules.find(s => s.id === id);
@@ -809,12 +787,12 @@
                             <input type="date" id="comp-date" required value="${new Date().toISOString().split('T')[0]}" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
                         </div>
                         <div>
-                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Đơn vị / Kỹ thuật viên phụ trách</label>
+                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Đơn vị / Gara thực hiện</label>
                             <input type="text" id="comp-provider" value="${item.location || 'Gara chính hãng'}" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
                         </div>
                         <div>
                             <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Ghi chú & Bảo hành phụ tùng</label>
-                            <textarea id="comp-note" rows="2" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none" placeholder="Đã thay phụ tùng mới, bảo hành 6 tháng...">${item.notes || ''}</textarea>
+                            <textarea id="comp-note" rows="2" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none" placeholder="Đã hoàn thành phụ tùng, kiểm tra đạt chuẩn...">${item.notes || ''}</textarea>
                         </div>
                         <div class="pt-4 flex justify-end space-x-3">
                             <button type="button" onclick="closeModal()" class="px-4 py-2 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50">Đóng</button>
@@ -836,11 +814,9 @@
             const provider = document.getElementById('comp-provider').value.trim();
             const notes = document.getElementById('comp-note').value.trim();
 
-            // 1. Chuyển trạng thái lịch hẹn thành completed
             item.status = 'completed';
             DB.set('schedules', schedules);
 
-            // 2. Tự động ghi vào lịch sử UC03
             const history = DB.get('history');
             history.unshift({
                 id: Date.now(),
@@ -1046,11 +1022,11 @@
                         </div>
                         <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Trung bình / mỗi xe</span>
                         <div class="text-2xl sm:text-3xl font-black text-brand-600 mt-2">${formatVND(avgCostPerVehicle)}</div>
-                        <p class="text-xs text-slate-400 mt-2">Tối ưu hoá tuổi thọ động cơ</p>
+                        <p class="text-xs text-slate-400 mt-2">Tối ưu hoá chi phí vận hành</p>
                     </div>
                 </div>
 
-                <!-- PHÂN BỔ THEO TỪNG XE -->
+                <!-- CHI TIẾT TỪNG XE -->
                 <h3 class="font-extrabold text-lg text-slate-900 mb-4">Chi tiết chi phí theo từng xe</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     ${myVehicles.map(v => {
@@ -1072,12 +1048,10 @@
                                         </div>
                                     </div>
 
-                                    <!-- Progress bar -->
                                     <div class="w-full bg-slate-100 rounded-full h-2 mt-3 overflow-hidden">
                                         <div class="bg-brand-600 h-2 rounded-full" style="width: ${pct}%"></div>
                                     </div>
 
-                                    <!-- List recent activities -->
                                     <div class="mt-4 space-y-2">
                                         <span class="text-[11px] font-bold uppercase text-slate-400 block tracking-wider">Các khoản bảo dưỡng:</span>
                                         ${vHistory.length === 0 ? `<p class="text-xs text-slate-400 italic">Chưa phát sinh chi phí.</p>` : ''}
@@ -1097,7 +1071,7 @@
             `;
         }
 
-        // <<Extend>> Xuất CSV
+        // <<Extend>> Xuất CSV chuẩn tiếng Việt (UTF-8 with BOM)
         function exportCSVData() {
             const myVehicles = DB.get('vehicles').filter(v => v.userId === currentUser.id);
             const vehicleIds = myVehicles.map(v => v.id);
@@ -1108,7 +1082,6 @@
                 return;
             }
 
-            // UTF-8 BOM để Excel hiển thị đúng tiếng Việt
             let csvContent = "\uFEFF";
             csvContent += "Mã,Ngày thực hiện,Phương tiện,Biển kiểm soát,Hạng mục,Chi phí (VNĐ),Đơn vị thực hiện,Ghi chú\n";
 
@@ -1128,7 +1101,7 @@
             link.click();
             document.body.removeChild(link);
 
-            showToast("Đã tải xuống file báo cáo chi phí CSV thành công!", "success");
+            showToast("Đã xuất file báo cáo CSV thành công!", "success");
         }
 
         /**
@@ -1154,7 +1127,7 @@
                             ${users.map(u => `
                                 <div class="flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:bg-slate-50 transition">
                                     <div class="flex items-center space-x-3">
-                                        <img src="${u.avatar}" class="w-10 h-10 rounded-full object-cover">
+                                        <img src="${u.avatar}" class="w-10 h-10 rounded-full border border-slate-200 bg-slate-50">
                                         <div>
                                             <div class="font-bold text-sm text-slate-900">${u.name}</div>
                                             <div class="text-xs text-slate-400">${u.email}</div>
@@ -1263,7 +1236,7 @@
             renderCurrentTabContent();
         }
 
-        // Khởi động render ứng dụng ngay khi load xong script
+        // Khởi động trang web
         renderApp();
     </script>
 </body>
